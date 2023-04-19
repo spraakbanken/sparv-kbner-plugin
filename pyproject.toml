@@ -4,11 +4,21 @@ build-backend = "maturin"
 
 [project]
 name = "sparv-kbner-plugin"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
+readme = "README.md"
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+    "sparv-pipeline @ git+https://github.com/spraakbanken/sparv-pipeline.git@dev",
+    "transformers >= 4.26.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
 ]
 
 
