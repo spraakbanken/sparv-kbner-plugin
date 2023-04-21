@@ -10,7 +10,7 @@ xml_export:
         - <sentence>
         - <token:word>
         - <token>:stanza.pos
-        - <token>:sparv_kb_ner.kb-ne
+        - <token>:sparv_kbner.kb-ne
 
 sparv:
     compression: none
