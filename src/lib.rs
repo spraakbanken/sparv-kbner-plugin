@@ -100,7 +100,7 @@ fn interleave_tags_and_tokens(
 
                 curr_token += 1;
                 if curr_token >= tokens.len() {
-                    println!("seen the last token, breaking...");
+                    log::info!("seen the last token, breaking...");
                     break;
                 }
                 token_start = tokens
