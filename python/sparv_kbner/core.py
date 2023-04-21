@@ -1,11 +1,9 @@
-from dataclasses import dataclass
-from typing import Iterable, Optional, Tuple
-# import xml.sax.saxutils
 
 from sparv.api import annotator, get_logger, Output, Annotation
 
 from transformers import pipeline
 
+from sparv_kbner_plugin import interleave_tags_and_tokens
 
 logger = get_logger(__name__)
 
@@ -70,7 +68,7 @@ def parse_kb_ner_output(
         # logger.debug("sent = %s", sent)
         # for token_index, tagged_token in zip(sent, tagged_tokens, strict=True):
         for token_index, tag, score in interleave_tags_and_tokens(
-            run_nlp_on_sentence(sent_to_tag), token_word, sent, sent_to_tag
+            run_nlp_on_sentence(sent_to_tag), token_word, sent
         ):
             # logger.debug(
             #     "token_index = %d, tagged_token = (%s,%s), token_word = %s",
@@ -88,25 +86,6 @@ def parse_kb_ner_output(
     out_ne_type.write(out_type_annotation)
     out_ne_score.write(out_score_annotation)
 
-
-# @dataclass
-# class TaggedToken:
-#     tag: Optional[str]
-#     score: Optional[float]
-
-#     @classmethod
-#     def default(cls) -> "TaggedToken":
-#         return cls(tag=None, score=None)
-
-
-# @dataclass
-# class Token:
-#     word: str
-#     entity: str
-#     start: int
-#     end: int
-#     score: float
-#     index: int
 
 
 def run_nlp_on_sentence(sentence: str) -> list[dict]:
@@ -153,125 +132,6 @@ def run_nlp_on_sentence(sentence: str) -> list[dict]:
         # logger.debug("tokens[-1].word = %s", tokens[-1].word)
         # logger.debug("tokens = %s", tokens)
     return tokens
-
-
-def amend_token_to_last(token, tokens):
-    # logger.debug("adding '%s' to last word %s", token["word"], tokens[-1]["word"])
-    tokens[-1]["word"] += token["word"]
-    tokens[-1]["end"] = token["end"]
-
-
-def interleave_tags_and_tokens(
-    tokens: list[dict], token_word: list[str], sent: list[int], sentence: str
-) -> Iterable[Tuple[int, str, str]]:
-    # ) -> Iterable[TaggedToken]:
-    logger.info("interleave_tags_and_tokens.tokens = %s", tokens)
-    # logger.debug("interleave_tags_and_tokens.sentence = %s", sentence)
-    curr_token = 0
-    if curr_token >= len(tokens):
-        return
-    end = len(sentence)
-    curr_sent = 0
-    curr_word_start = 0
-    curr_word_end = len(sentence)
-    token_start = tokens[curr_token]["start"]
-    for curr_sent in sent:
-        curr_word_end = curr_word_start + len(token_word[curr_sent])
-
-        # logger.debug(
-        #     "curr_word = '%s' [%d:%d] (%s), curr_token = '%s' [%d:%d]",
-        #     curr_word,
-        #     curr_word_start,
-        #     curr_word_end,
-        #     sentence[curr_word_start:curr_word_end],
-        #     tokens[curr_token]["word"] if curr_token < len(tokens) else "",
-        #     token_start,
-        #     token_end,
-        # )
-        # have we found curr_token?
-        if curr_word_start <= token_start < curr_word_end:
-            # if curr_word_start == token_start:
-            #     logger.debug(
-            #         "Matched token '%s' <%s> starting at %d",
-            #         curr_word,
-            #         tokens[curr_token]["entity"],
-            #         curr_word_start,
-            #     )
-            # else:
-            #     logger.info(
-            #         "Partial matched of token '%s' [%d:%d] <%s> in word '%s'",
-            #         tokens[curr_token]["word"],
-            #         token_start,
-            #         token_end,
-            #         tokens[curr_token]["entity"],
-            #         curr_word,
-            #     )
-            yield (
-                curr_sent,
-                translate_tag(tokens[curr_token]["entity"]),
-                str(tokens[curr_token]["score"]),
-            )
-            # yield TaggedToken(
-            #     tag=translate_tag(tokens[curr_token].entity),
-            #     score=tokens[curr_token].score,
-            # )
-            curr_token += 1
-            if curr_token >= len(tokens):
-                break
-            token_start = tokens[curr_token]["start"]
-        # else:
-        #     yield ("", "")
-        # yield TaggedToken.default()
-        # update curr_word
-        curr_word_start += len(token_word[curr_sent]) + 1
-        # curr_sent += 1
-
-
-# def interleave_tags_and_sentence(
-#     tokens: list[Token], sentence: str
-# ) -> list[TaggedToken]:
-#     logger.info("tokens = %s", tokens)
-#     logger.debug("sentence = %s", sentence)
-#     tags = []
-#     end = len(sentence)
-#     curr: int = 0
-#     curr_token = 0
-#     while curr < end:
-#         if curr_token < len(tokens) and tokens[curr_token].start == curr:
-#             logger.debug(
-#                 "word = %s, tag = %s",
-#                 tokens[curr_token].word,
-#                 tokens[curr_token].entity,
-#             )
-#             tags.append(
-#                 TaggedToken(
-#                     tag=translate_tag(tokens[curr_token].entity),
-#                     score=tokens[curr_token].score,
-#                 )
-#             )
-#             curr = find_word_ending(sentence, tokens[curr_token].end)
-#             curr_token = find_next_token(tokens, curr_token, curr)
-
-#         else:
-#             # logger.debug(
-#             #     "last_token=%d, last_token.end=%s, curr=%d, sentence[curr]=%s",
-#             #     curr_token - 1,
-#             #     tokens[curr_token - 1].end if curr_token > 0 else "NO",
-#             #     curr,
-#             #     sentence[curr],
-#             # )
-#             part_end = tokens[curr_token].start if curr_token < len(tokens) else end
-#             part = sentence[curr:part_end]
-#             logger.debug("part='%s'", part)
-#             if parts := part.strip():
-#                 parts = parts.split(" ")
-#                 logger.debug("parts=%s", parts)
-#                 # print(f"{parts=}")
-#                 for word in parts:
-#                     logger.debug("word = %s", word)
-#                     tags.append(TaggedToken(tag=None, score=None))
-#             curr = part_end
-#     return tags
 
 
 def find_word_ending(sentence: str, token_end: int) -> int:
