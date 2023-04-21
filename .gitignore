@@ -70,3 +70,11 @@ docs/_build/
 
 # Pyenv
 .python-version
+
+# Generated assets
+/assets/example_corpora.zip
+/assets/example_corpora/
+
+.snakemake
+sparv-workdir
+xml_export.pretty
