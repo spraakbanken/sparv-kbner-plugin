@@ -55,7 +55,7 @@ fn interleave_tags_and_tokens(
     token_word: &PyList,
     sent: &PyList,
 ) -> PyResult<Py<PyList>> {
-    println!("interleave_tags_and_tokens_rust");
+    log::debug!("interleave_tags_and_tokens");
     Python::with_gil(|py| -> PyResult<Py<PyList>> {
         let list: Py<PyList> = PyList::empty(py).into();
         let mut curr_token = 0;
@@ -72,7 +72,7 @@ fn interleave_tags_and_tokens(
             .ok_or(PyRuntimeError::new_err("start is missing"))?
             .downcast::<PyInt>()?
             .extract::<usize>()?;
-        println!("starting loop");
+        log::info!("starting loop");
         for sent_val in sent.iter() {
             let curr_sent = sent_val.downcast::<PyInt>()?.extract::<usize>()?;
             let curr_word_end = curr_word_start
@@ -95,7 +95,7 @@ fn interleave_tags_and_tokens(
                 // let score = score.extract::<f32>()?;
                 // dbg!(&score);
                 tagged_tokens.append::<Py<PyTuple>>(
-                    (curr_sent, translate_tag(entity), score_any).into_py(py),
+                    (curr_sent, translate_tag(entity), score_any.to_string()).into_py(py),
                 )?;
 
                 curr_token += 1;
@@ -131,7 +131,9 @@ fn translate_tag(tag: &str) -> &str {
 }
 /// A Python module implemented in Rust.
 #[pymodule]
-fn sparv_kbner_plugin(_py: Python, m: &PyModule) -> PyResult<()> {
+fn sparv_kbner(_py: Python, m: &PyModule) -> PyResult<()> {
+    pyo3_log::init();
+
     m.add_function(wrap_pyfunction!(interleave_tags_and_tokens, m)?)?;
     Ok(())
 }

@@ -24,11 +24,11 @@ test: dev
 test-release: dev-release
 	${INVENV} pytest python/tests
 
-dev: target/debug/libsparv_kbner_plugin.so
-dev-release: target/release/libsparv_kbner_plugin.so
+dev: target/debug/libsparv_kbner.so
+dev-release: target/release/libsparv_kbner.so
 
-target/debug/libsparv_kbner_plugin.so: src/lib.rs
+target/debug/libsparv_kbner.so: src/lib.rs
 	${INVENV} maturin develop
 
-target/release/libsparv_kbner_plugin.so: src/lib.rs
+target/release/libsparv_kbner.so: src/lib.rs
 	${INVENV} maturin develop --release

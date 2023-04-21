@@ -3,7 +3,7 @@ from sparv.api import annotator, get_logger, Output, Annotation
 
 from transformers import pipeline
 
-from sparv_kbner_plugin import interleave_tags_and_tokens
+from sparv_kbner.sparv_kbner import interleave_tags_and_tokens
 
 logger = get_logger(__name__)
 

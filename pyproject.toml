@@ -3,7 +3,7 @@ requires = ["maturin>=0.14,<0.15"]
 build-backend = "maturin"
 
 [project]
-name = "sparv-kbner-plugin"
+name = "sparv-kbner"
 requires-python = ">=3.8"
 readme = "README.md"
 classifiers = [
@@ -21,6 +21,8 @@ dev = [
     "pytest",
 ]
 
+[project.entry-points."sparv.plugin"]
+sparv_kbner = "sparv_kbner"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
